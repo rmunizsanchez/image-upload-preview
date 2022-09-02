@@ -113,11 +113,13 @@ export default {
         missing: false,
         deleted: false,
         uploadErrors: new Errors(),
+        path:'',
+        pathStorage:''
     }),
 
     mounted() {
         this.field.fill = formData => {
-            formData.append(this.field.attribute, this.file, this.fileName)
+            formData.append(this.field.attribute, this.pathStorage)
         }
 
         if (this.field.thumbnailUrl) {
@@ -184,9 +186,12 @@ export default {
                 reader.onload = (e) => {
                     this.imagePreview = e.target.result;
                     this.loading = false;
+                    this.uploadFileToAPI(e)
                 }
                 this.loading = true;
                 reader.readAsDataURL(this.file);
+
+
             }
         },
 
@@ -260,7 +265,27 @@ export default {
                 }
             }
         },
+
+        uploadFileToAPI(e) {
+          var formData = new FormData()
+          let self = this;
+          formData.append('image', this.file);
+          formData.append('path', 'menu/ups');
+            Nova.request().post(
+                '/api/v2/file',
+                formData,
+                {
+                 'Content-Type': 'multipart/form-data'
+                }
+            ).then((res => {
+              console.log(res);
+              _.forEach(res.data.data,function (value) {
+                 self.pathStorage = value.value;
+              })
+            }));
+        }
     },
+
 
     computed: {
         uploaderClasses() {
